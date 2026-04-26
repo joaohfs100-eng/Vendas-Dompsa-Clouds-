@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#080c14">
+    <meta name="description" content="Vendas Dompsa - Gerenciador de vendas offline-first">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vendas Dompsa">
+    <link rel="manifest" href="manifest.json">
+    <title>Vendas Dompsa - Cloud Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #080c14;
+            --bg-card: #0f1419;
+            --text: #f5f5f5;
+            --text-muted: #9ca3af;
+            --border: #1f2937;
+            --primary: #a78bfa;
+            --primary-dark: #7c3aed;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #eab308;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        header p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .tabs-container {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        input, select, textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.primary {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+
+        button.primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+
+        button.danger {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        button.danger:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .item-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .item-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-detail {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-width: 300px;
+            z-index: 1000;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .toast.success {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .sync-status {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 999;
+        }
+
+        .sync-status.online::before {
+            content: '●';
+            color: var(--success);
+        }
+
+        .sync-status.offline::before {
+            content: '●';
+            color: var(--danger);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .form-group {
+                grid-template-columns: 1fr;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .item-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .item-actions {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+
+            .item-actions button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-left">
+                <h1>Vendas Dompsa</h1>
+                <p id="userGreeting">Bem-vindo</p>
+            </div>
+            <div class="header-right">
+                <button onclick="logout()">Sair</button>
+            </div>
+        </header>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchPage('dashboard')">Dashboard</button>
+            <button class="tab-btn" onclick="switchPage('clients')">Clientes</button>
+            <button class="tab-btn" onclick="switchPage('products')">Produtos</button>
+            <button class="tab-btn" onclick="switchPage('sales')">Vendas</button>
+        </div>
+
+        <main>
+            <div class="container">
+                <!-- Dashboard Page -->
+                <div id="page-dashboard" class="page">
+                    <div class="grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Clientes</div>
+                            <div class="metric-value" id="metric-clients">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Produtos</div>
+                            <div class="metric-value" id="metric-products">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Vendas Pendentes</div>
+                            <div class="metric-value" id="metric-pending">0</div>
+                            <div class="metric-label" id="metric-pending-value">R$ 0.00</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Vendas Pagas</div>
+                            <div class="metric-value" id="metric-paid">0</div>
+                            <div class="metric-label" id="metric-paid-value">R$ 0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clients Page -->
+                <div id="page-clients" class="page hidden">
+                    <div class="card">
+                        <div class="card-title">Adicionar Cliente</div>
+                        <div class="card-desc">Registre um novo cliente</div>
+                        <div class="form-group">
+                            <input type="text" id="clientName" placeholder="Nome do cliente">
+                            <input type="text" id="clientCia" placeholder="CIA (ex: Dompsa)">
+                            <input type="tel" id="clientPhone" placeholder="WhatsApp (opcional)">
+                            <button class="primary" onclick="addClient()">Adicionar Cliente</button>
+                        </div>
+                    </div>
+
+                    <div id="clientsList" class="item-list"></div>
+                </div>
+
+                <!-- Products Page -->
+                <div id="page-products" class="page hidden">
+                    <div class="card">
+                        <div class="card-title">Adicionar Produto</div>
+                        <div class="card-desc">Registre um novo produto</div>
+                        <div class="form-group">
+                            <input type="text" id="productName" placeholder="Nome do produto">
+                            <input type="number" id="productPrice" placeholder="Preço (R$)" step="0.01">
+                            <input type="number" id="productStock" placeholder="Estoque" value="0">
+                            <button class="primary" onclick="addProduct()">Adicionar Produto</button>
+                        </div>
+                    </div>
+
+                    <div id="productsList" class="item-list"></div>
+                </div>
+
+                <!-- Sales Page -->
+                <div id="page-sales" class="page hidden">
+                    <div class="card">
+                        <div class="card-title">Registrar Venda</div>
+                        <div class="card-desc">Registre uma nova venda</div>
+                        <div class="form-group">
+                            <select id="saleClient">
+                                <option value="">Selecione cliente</option>
+                            </select>
+                            <select id="saleProduct">
+                                <option value="">Selecione produto</option>
+                            </select>
+                            <input type="number" id="saleQuantity" placeholder="Quantidade" value="1">
+                            <input type="number" id="salePrice" placeholder="Preço (R$)" step="0.01">
+                            <input type="text" id="saleNotes" placeholder="Observações (opcional)">
+                            <button class="primary" onclick="addSale()">Registrar Venda</button>
+                        </div>
+                    </div>
+
+                    <div id="salesList" class="item-list"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sync-status online" id="syncStatus">Online</div>
+
+    <script>
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        const app = {
+            currentPage: 'dashboard',
+            user: { name: 'Usuário' },
+            clients: [],
+            products: [],
+            sales: [],
+            isOnline: navigator.onLine,
+
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.render();
+            },
+
+            loadData() {
+                this.clients = JSON.parse(localStorage.getItem('clients') || '[]');
+                this.products = JSON.parse(localStorage.getItem('products') || '[]');
+                this.sales = JSON.parse(localStorage.getItem('sales') || '[]');
+            },
+
+            saveData() {
+                localStorage.setItem('clients', JSON.stringify(this.clients));
+                localStorage.setItem('products', JSON.stringify(this.products));
+                localStorage.setItem('sales', JSON.stringify(this.sales));
+            },
+
+            setupEventListeners() {
+                window.addEventListener('online', () => {
+                    this.isOnline = true;
+                    this.updateSyncStatus();
+                    this.showToast('Conectado à internet', 'success');
+                });
+
+                window.addEventListener('offline', () => {
+                    this.isOnline = false;
+                    this.updateSyncStatus();
+                    this.showToast('Sem conexão com a internet', 'error');
+                });
+            },
+
+            render() {
+                this.updateMetrics();
+                this.renderClientsList();
+                this.renderProductsList();
+                this.renderSalesList();
+                this.updateSyncStatus();
+            },
+
+            updateMetrics() {
+                const pendingSales = this.sales.filter(s => s.status === 'pendente');
+                const paidSales = this.sales.filter(s => s.status === 'pago');
+                const pendingTotal = pendingSales.reduce((sum, s) => sum + parseFloat(s.price || 0), 0);
+                const paidTotal = paidSales.reduce((sum, s) => sum + parseFloat(s.price || 0), 0);
+
+                document.getElementById('metric-clients').textContent = this.clients.length;
+                document.getElementById('metric-products').textContent = this.products.length;
+                document.getElementById('metric-pending').textContent = pendingSales.length;
+                document.getElementById('metric-pending-value').textContent = `R$ ${pendingTotal.toFixed(2)}`;
+                document.getElementById('metric-paid').textContent = paidSales.length;
+                document.getElementById('metric-paid-value').textContent = `R$ ${paidTotal.toFixed(2)}`;
+            },
+
+            renderClientsList() {
+                const list = document.getElementById('clientsList');
+                if (this.clients.length === 0) {
+                    list.innerHTML = '<div class="empty-state">Nenhum cliente cadastrado</div>';
+                    return;
+                }
+
+                list.innerHTML = this.clients.map(client => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${client.name}</div>
+                            <div class="item-detail">CIA: ${client.cia}</div>
+                            ${client.phone ? `<div class="item-detail">Tel: ${client.phone}</div>` : ''}
+                        </div>
+                        <div class="item-actions">
+                            <button class="danger" onclick="deleteClient(${client.id})">Remover</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            renderProductsList() {
+                const list = document.getElementById('productsList');
+                if (this.products.length === 0) {
+                    list.innerHTML = '<div class="empty-state">Nenhum produto cadastrado</div>';
+                    return;
+                }
+
+                list.innerHTML = this.products.map(product => `
+                    <div class="item-card">
+                        <div class="item-info">
+                            <div class="item-name">${product.name}</div>
+                            <div class="item-detail">Preço: R$ ${parseFloat(product.price).toFixed(2)}</div>
+                            <div class="item-detail">Estoque: ${product.stock} unidades</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="danger" onclick="deleteProduct(${product.id})">Remover</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            renderSalesList() {
+                const list = document.getElementById('salesList');
+                if (this.sales.length === 0) {
+                    list.innerHTML = '<div class="empty-state">Nenhuma venda registrada</div>';
+                    return;
+                }
+
+                list.innerHTML = this.sales.map(sale => {
+                    const client = this.clients.find(c => c.id === sale.clientId);
+                    const product = this.products.find(p => p.id === sale.productId);
+                    const isPaid = sale.status === 'pago';
+
+                    return `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <div class="item-name">${client?.name || 'Cliente'} - ${product?.name || 'Produto'}</div>
+                                <div class="item-detail">Quantidade: ${sale.quantity} | Preço: R$ ${parseFloat(sale.price).toFixed(2)}</div>
+                                <div class="item-detail">Status: <span style="color: ${isPaid ? 'var(--success)' : 'var(--warning)'}">${isPaid ? 'Pago' : 'Pendente'}</span></div>
+                                ${sale.notes ? `<div class="item-detail">Notas: ${sale.notes}</div>` : ''}
+                            </div>
+                            <div class="item-actions">
+                                <button onclick="toggleSaleStatus(${sale.id})">${isPaid ? 'Marcar Pendente' : 'Marcar Pago'}</button>
+                                <button class="danger" onclick="deleteSale(${sale.id})">Remover</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                this.updateSaleSelects();
+            },
+
+            updateSaleSelects() {
+                const clientSelect = document.getElementById('saleClient');
+                const productSelect = document.getElementById('saleProduct');
+
+                clientSelect.innerHTML = '<option value="">Selecione cliente</option>' + 
+                    this.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+                productSelect.innerHTML = '<option value="">Selecione produto</option>' + 
+                    this.products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            },
+
+            updateSyncStatus() {
+                const status = document.getElementById('syncStatus');
+                status.textContent = this.isOnline ? 'Online' : 'Offline';
+                status.className = `sync-status ${this.isOnline ? 'online' : 'offline'}`;
+            },
+
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.animation = 'slideUp 0.3s ease-out reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        };
+
+        // ============================================
+        // PAGE NAVIGATION
+        // ============================================
+        function switchPage(page) {
+            app.currentPage = page;
+
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+
+            // Show selected page
+            document.getElementById(`page-${page}`).classList.remove('hidden');
+
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // ============================================
+        // CLIENT OPERATIONS
+        // ============================================
+        function addClient() {
+            const name = document.getElementById('clientName').value.trim();
+            const cia = document.getElementById('clientCia').value.trim() || 'Outros';
+            const phone = document.getElementById('clientPhone').value.trim();
+
+            if (!name) {
+                app.showToast('Nome do cliente é obrigatório', 'error');
+                return;
+            }
+
+            app.clients.push({
+                id: Date.now(),
+                name,
+                cia,
+                phone
+            });
+
+            app.saveData();
+            app.render();
+
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientCia').value = '';
+            document.getElementById('clientPhone').value = '';
+
+            app.showToast('Cliente adicionado com sucesso', 'success');
+        }
+
+        function deleteClient(id) {
+            if (!confirm('Tem certeza que deseja remover este cliente?')) return;
+
+            app.clients = app.clients.filter(c => c.id !== id);
+            app.saveData();
+            app.render();
+            app.showToast('Cliente removido com sucesso', 'success');
+        }
+
+        // ============================================
+        // PRODUCT OPERATIONS
+        // ============================================
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = document.getElementById('productPrice').value.trim();
+            const stock = document.getElementById('productStock').value.trim();
+
+            if (!name || !price) {
+                app.showToast('Nome e preço são obrigatórios', 'error');
+                return;
+            }
+
+            app.products.push({
+                id: Date.now(),
+                name,
+                price,
+                stock: parseInt(stock) || 0
+            });
+
+            app.saveData();
+            app.render();
+
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productStock').value = '0';
+
+            app.showToast('Produto adicionado com sucesso', 'success');
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('Tem certeza que deseja remover este produto?')) return;
+
+            app.products = app.products.filter(p => p.id !== id);
+            app.saveData();
+            app.render();
+            app.showToast('Produto removido com sucesso', 'success');
+        }
+
+        // ============================================
+        // SALE OPERATIONS
+        // ============================================
+        function addSale() {
+            const clientId = parseInt(document.getElementById('saleClient').value);
+            const productId = parseInt(document.getElementById('saleProduct').value);
+            const quantity = document.getElementById('saleQuantity').value.trim();
+            const price = document.getElementById('salePrice').value.trim();
+            const notes = document.getElementById('saleNotes').value.trim();
+
+            if (!clientId || !productId || !price) {
+                app.showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+
+            app.sales.push({
+                id: Date.now(),
+                clientId,
+                productId,
+                quantity: parseInt(quantity) || 1,
+                price,
+                notes,
+                status: 'pendente',
+                date: new Date().toISOString()
+            });
+
+            app.saveData();
+            app.render();
+
+            document.getElementById('saleClient').value = '';
+            document.getElementById('saleProduct').value = '';
+            document.getElementById('saleQuantity').value = '1';
+            document.getElementById('salePrice').value = '';
+            document.getElementById('saleNotes').value = '';
+
+            app.showToast('Venda registrada com sucesso', 'success');
+        }
+
+        function toggleSaleStatus(id) {
+            const sale = app.sales.find(s => s.id === id);
+            if (sale) {
+                sale.status = sale.status === 'pendente' ? 'pago' : 'pendente';
+                app.saveData();
+                app.render();
+                app.showToast('Status da venda atualizado', 'success');
+            }
+        }
+
+        function deleteSale(id) {
+            if (!confirm('Tem certeza que deseja remover esta venda?')) return;
+
+            app.sales = app.sales.filter(s => s.id !== id);
+            app.saveData();
+            app.render();
+            app.showToast('Venda removida com sucesso', 'success');
+        }
+
+        // ============================================
+        // MISC FUNCTIONS
+        // ============================================
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').catch(err => {
+                console.log('Service Worker não disponível:', err);
+            });
+        }
+    </script>
+</body>
+</html>
